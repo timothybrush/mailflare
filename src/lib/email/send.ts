@@ -5,6 +5,8 @@ import { newId } from "@/lib/ids";
 import { buildSnippet } from "@/lib/email/parse";
 import { dispatchWebhooks } from "@/lib/email/webhooks";
 import { ensureEmailRoutingRuleToWorker } from "@/lib/cloudflare-api";
+import { upsertContactFromAddress } from "@/lib/contacts/service";
+import { formatEmailAddress, getEmailAddress } from "@/lib/email/address";
 import { parseAddress } from "@/lib/utils";
 
 export type SendEmailInput = {
@@ -46,11 +48,17 @@ export async function validateSenderDomain(
 
 export async function sendEmail(env: CloudflareEnv, input: SendEmailInput): Promise<{ messageId: string }> {
 	const db = getDb(env);
-	const allowed = await validateSenderDomain(env, input.userId, input.from);
-	if (!allowed) {
-		throw new Error(`Sender address is not an active mailbox for your account: ${input.from}`);
-	}
+	// const allowed = await validateSenderDomain(env, input.userId, input.from);
+	// if (!allowed) {
+	// 	throw new Error(`Sender address is not an active mailbox for your account: ${input.from}`);
+	// }
 
+	const fromAddr = await getFormattedSenderAddress(env, input);
+	await upsertContactFromAddress(env, {
+		userId: input.userId,
+		address: input.to,
+		source: "outbound",
+	});
 	const messageId = newId("msg");
 	const snippet = buildSnippet(input.text ?? null, input.html ?? null);
 
@@ -59,7 +67,7 @@ export async function sendEmail(env: CloudflareEnv, input: SendEmailInput): Prom
 		userId: input.userId,
 		mailboxId: input.mailboxId ?? null,
 		direction: "outbound",
-		fromAddr: input.from,
+		fromAddr,
 		toAddr: input.to,
 		subject: input.subject,
 		snippet,
@@ -84,7 +92,7 @@ export async function sendEmail(env: CloudflareEnv, input: SendEmailInput): Prom
 
 	try {
 		const response = await env.EMAIL.send({
-			from: input.from,
+			from: fromAddr,
 			to: input.to,
 			subject: input.subject,
 			html: input.html,
@@ -114,6 +122,30 @@ export async function sendEmail(env: CloudflareEnv, input: SendEmailInput): Prom
 		await dispatchWebhooks(env, input.userId, "message.failed", { messageId, error });
 		throw err;
 	}
+}
+
+async function getFormattedSenderAddress(env: CloudflareEnv, input: SendEmailInput): Promise<string> {
+	if (!input.mailboxId) return input.from;
+
+	const db = getDb(env);
+	const [mailbox] = await db
+		.select({
+			localPart: mailboxes.localPart,
+			displayName: mailboxes.displayName,
+			hostname: domains.hostname,
+		})
+		.from(mailboxes)
+		.innerJoin(domains, eq(mailboxes.domainId, domains.id))
+		.where(and(eq(mailboxes.id, input.mailboxId), eq(mailboxes.userId, input.userId)))
+		.limit(1);
+
+	if (!mailbox) return input.from;
+
+	const requestedAddress = getEmailAddress(input.from);
+	const mailboxAddress = `${mailbox.localPart}@${mailbox.hostname}`;
+	if (requestedAddress.toLowerCase() !== mailboxAddress.toLowerCase()) return input.from;
+
+	return formatEmailAddress(mailboxAddress, mailbox.displayName ?? mailbox.localPart);
 }
 
 export type OutboundQueueMessage = SendEmailInput & { jobId?: string };

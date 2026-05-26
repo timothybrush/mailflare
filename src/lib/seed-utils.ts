@@ -9,6 +9,7 @@ import {
 	users,
 } from "@/db/schema";
 import { hashPassword } from "@/lib/auth/password";
+import { upsertContactFromAddress } from "@/lib/contacts/service";
 import { buildSnippet } from "@/lib/email/parse";
 import { newId } from "@/lib/ids";
 import type {
@@ -38,8 +39,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "support",
 		direction: "inbound",
 		status: "received",
-		fromAddr: "maya@acme.test",
-		toAddr: `support@${demoDomain}`,
+		fromAddr: `"Maya Chen" <maya@acme.test>`,
+		toAddr: `"Support" <support@${demoDomain}>`,
 		subject: "Cannot access workspace",
 		textBody:
 			"I reset my password this morning, but the login page still loops back to the sign-in screen. Can you check whether the account is locked?",
@@ -51,8 +52,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "support",
 		direction: "inbound",
 		status: "received",
-		fromAddr: "devops@northwind.test",
-		toAddr: `support@${demoDomain}`,
+		fromAddr: `"Northwind DevOps" <devops@northwind.test>`,
+		toAddr: `"Support" <support@${demoDomain}>`,
 		subject: "Webhook retry question",
 		textBody:
 			"We noticed three delivery attempts for the same event. Is there a way to confirm whether retries stop after a 2xx response?",
@@ -64,8 +65,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "billing",
 		direction: "inbound",
 		status: "received",
-		fromAddr: "finance@contoso.test",
-		toAddr: `billing@${demoDomain}`,
+		fromAddr: `"Contoso Finance" <finance@contoso.test>`,
+		toAddr: `"Billing" <billing@${demoDomain}>`,
 		subject: "Invoice address update",
 		textBody:
 			"Please update our invoice contact to finance-team@contoso.test before the next billing cycle closes.",
@@ -77,8 +78,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "support",
 		direction: "outbound",
 		status: "sent",
-		fromAddr: `support@${demoDomain}`,
-		toAddr: "maya@acme.test",
+		fromAddr: `"Support" <support@${demoDomain}>`,
+		toAddr: `"Maya Chen" <maya@acme.test>`,
 		subject: "Re: Cannot access workspace",
 		textBody:
 			"I cleared the stale session and sent a fresh password reset link. Please try again from an incognito window.",
@@ -90,8 +91,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "billing",
 		direction: "outbound",
 		status: "sent",
-		fromAddr: `billing@${demoDomain}`,
-		toAddr: "finance@contoso.test",
+		fromAddr: `"Billing" <billing@${demoDomain}>`,
+		toAddr: `"Contoso Finance" <finance@contoso.test>`,
 		subject: "Re: Invoice address update",
 		textBody:
 			"The billing contact is updated. Future invoices will go to finance-team@contoso.test.",
@@ -103,8 +104,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "support",
 		direction: "outbound",
 		status: "draft",
-		fromAddr: `support@${demoDomain}`,
-		toAddr: "devops@northwind.test",
+		fromAddr: `"Support" <support@${demoDomain}>`,
+		toAddr: `"Northwind DevOps" <devops@northwind.test>`,
 		subject: "Re: Webhook retry question",
 		textBody:
 			"Draft note: include retry backoff details, delivery log location, and the recommendation to return HTTP 204 after processing.",
@@ -115,8 +116,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "billing",
 		direction: "outbound",
 		status: "draft",
-		fromAddr: `billing@${demoDomain}`,
-		toAddr: "procurement@globex.test",
+		fromAddr: `"Billing" <billing@${demoDomain}>`,
+		toAddr: `"Globex Procurement" <procurement@globex.test>`,
 		subject: "Annual plan renewal",
 		textBody:
 			"Draft renewal response with seat count, purchase order reference, and requested renewal date.",
@@ -127,8 +128,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "support",
 		direction: "inbound",
 		status: "spam",
-		fromAddr: "promo@unknown-sender.test",
-		toAddr: `support@${demoDomain}`,
+		fromAddr: `"Traffic Promotions" <promo@unknown-sender.test>`,
+		toAddr: `"Support" <support@${demoDomain}>`,
 		subject: "Urgent traffic boost offer",
 		textBody:
 			"We can send thousands of visitors to your dashboard today. Reply now for the limited campaign rate.",
@@ -140,8 +141,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "billing",
 		direction: "inbound",
 		status: "spam",
-		fromAddr: "alerts@fake-bank.test",
-		toAddr: `billing@${demoDomain}`,
+		fromAddr: `"Fake Bank Alerts" <alerts@fake-bank.test>`,
+		toAddr: `"Billing" <billing@${demoDomain}>`,
 		subject: "Payment account verification required",
 		textBody:
 			"Your payout account requires verification. Open the attached link and confirm your banking credentials.",
@@ -153,8 +154,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "support",
 		direction: "inbound",
 		status: "trash",
-		fromAddr: "old-thread@vendor.test",
-		toAddr: `support@${demoDomain}`,
+		fromAddr: `"Vendor Migration" <old-thread@vendor.test>`,
+		toAddr: `"Support" <support@${demoDomain}>`,
 		subject: "Legacy migration thread",
 		textBody:
 			"This message was moved to trash after the migration checklist was completed and archived.",
@@ -166,8 +167,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "billing",
 		direction: "outbound",
 		status: "trash",
-		fromAddr: `billing@${demoDomain}`,
-		toAddr: "ops@initech.test",
+		fromAddr: `"Billing" <billing@${demoDomain}>`,
+		toAddr: `"Initech Ops" <ops@initech.test>`,
 		subject: "Old billing draft",
 		textBody:
 			"Discarded copy of an earlier billing reply that was replaced by the final invoice response.",
@@ -178,8 +179,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "support",
 		direction: "outbound",
 		status: "queued",
-		fromAddr: `support@${demoDomain}`,
-		toAddr: "status@customer.test",
+		fromAddr: `"Support" <support@${demoDomain}>`,
+		toAddr: `"Customer Status" <status@customer.test>`,
 		subject: "Queued delivery status",
 		textBody:
 			"This seeded message represents an outbound email waiting for the worker queue to process.",
@@ -190,8 +191,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "billing",
 		direction: "outbound",
 		status: "queued",
-		fromAddr: `billing@${demoDomain}`,
-		toAddr: "ap@umbrella.test",
+		fromAddr: `"Billing" <billing@${demoDomain}>`,
+		toAddr: `"Umbrella AP" <ap@umbrella.test>`,
 		subject: "Queued payment receipt",
 		textBody:
 			"This seeded receipt is queued so API and background-job views can exercise pending delivery states.",
@@ -202,8 +203,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "support",
 		direction: "outbound",
 		status: "failed",
-		fromAddr: `support@${demoDomain}`,
-		toAddr: "bounce@invalid.test",
+		fromAddr: `"Support" <support@${demoDomain}>`,
+		toAddr: `"Invalid Bounce" <bounce@invalid.test>`,
 		subject: "Failed SMTP handoff",
 		textBody:
 			"This seeded message failed delivery after the provider rejected the recipient address.",
@@ -214,8 +215,8 @@ const seedMessages: SeedMessageDefinition[] = [
 		mailbox: "billing",
 		direction: "outbound",
 		status: "failed",
-		fromAddr: `billing@${demoDomain}`,
-		toAddr: "closed-account@partner.test",
+		fromAddr: `"Billing" <billing@${demoDomain}>`,
+		toAddr: `"Closed Partner Account" <closed-account@partner.test>`,
 		subject: "Failed billing notice",
 		textBody:
 			"This seeded billing notice failed because the destination mailbox no longer exists.",
@@ -366,6 +367,12 @@ export async function insertDemoMessages(
 				updatedAt: createdAt,
 			});
 		}
+
+		await upsertContactFromAddress(env, {
+			userId,
+			address: seedMessage.direction === "inbound" ? seedMessage.fromAddr : seedMessage.toAddr,
+			source: seedMessage.direction === "inbound" ? "inbound" : "outbound",
+		});
 	}
 
 	return seedMessages.length;

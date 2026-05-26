@@ -102,7 +102,7 @@ export async function POST(request: Request) {
 	}
 
 	const token = await createSession(env, userId);
-	const response = NextResponse.json({ ok: true, redirect: "/inbox" });
+	const response = NextResponse.json({ ok: true, token, redirect: "/inbox" });
 	response.cookies.set(SESSION_COOKIE, token, {
 		httpOnly: true,
 		sameSite: "lax",

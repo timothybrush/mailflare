@@ -8,8 +8,8 @@ interface CloudflareEnv {
 	IMAGES: ImagesBinding;
 	WORKER_SELF_REFERENCE: Fetcher;
 	CF_TOKEN?: string;
-	CLOUDFLARE_API_KEY?: string;
-	CLOUDFLARE_EMAIL?: string;
+	CF_API_KEY?: string;
+	CF_EMAIL?: string;
 	CF_ACCOUNT_ID?: string;
 	CF_EMAIL_WORKER_NAME?: string;
 }

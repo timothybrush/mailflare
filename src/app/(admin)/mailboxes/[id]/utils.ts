@@ -1,3 +1,4 @@
+import { authFetch } from "@/lib/auth/client";
 import type { MailboxDetail, MailboxDetailResponse } from "./types";
 
 export function getMailboxAddress(mailbox: Pick<MailboxDetail, "localPart" | "hostname">): string {
@@ -5,7 +6,7 @@ export function getMailboxAddress(mailbox: Pick<MailboxDetail, "localPart" | "ho
 }
 
 export async function fetchMailbox(id: string): Promise<MailboxDetail> {
-	const res = await fetch(`/api/mailboxes/${id}`);
+	const res = await authFetch(`/api/mailboxes/${id}`);
 	const json = (await res.json()) as MailboxDetailResponse;
 
 	if (!res.ok || !json.mailbox) {
@@ -16,7 +17,7 @@ export async function fetchMailbox(id: string): Promise<MailboxDetail> {
 }
 
 export async function updateMailboxName(id: string, displayName: string): Promise<MailboxDetail> {
-	const res = await fetch(`/api/mailboxes/${id}`, {
+	const res = await authFetch(`/api/mailboxes/${id}`, {
 		method: "PATCH",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ displayName }),

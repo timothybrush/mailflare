@@ -7,6 +7,9 @@ export type ResolvedMailbox = {
 	mailboxId: string;
 	userId: string;
 	domainId: string;
+	localPart: string;
+	hostname: string;
+	displayName: string | null;
 };
 
 export type RoutingDecision = {
@@ -43,12 +46,22 @@ export async function resolveInboundAddress(
 				return { action: "forward", forwardTo: rule.forwardTo };
 			}
 			if (rule.mailboxId) {
+				const [mailbox] = await db
+					.select()
+					.from(mailboxes)
+					.where(and(eq(mailboxes.id, rule.mailboxId), eq(mailboxes.domainId, domain.id)))
+					.limit(1);
+				if (!mailbox) return null;
+
 				return {
 					action: "store",
 					mailbox: {
-						mailboxId: rule.mailboxId,
-						userId: domain.userId,
+						mailboxId: mailbox.id,
+						userId: mailbox.userId,
 						domainId: domain.id,
+						localPart: mailbox.localPart,
+						hostname: domain.hostname,
+						displayName: mailbox.displayName,
 					},
 				};
 			}
@@ -69,6 +82,9 @@ export async function resolveInboundAddress(
 			mailboxId: mailbox.id,
 			userId: mailbox.userId,
 			domainId: domain.id,
+			localPart: mailbox.localPart,
+			hostname: domain.hostname,
+			displayName: mailbox.displayName,
 		},
 	};
 }

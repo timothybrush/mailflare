@@ -1,15 +1,33 @@
+"use client";
+
 import Link from "next/link";
-import { getEnv } from "@/lib/cloudflare";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { getCurrentUser } from "@/lib/auth/cookies";
+import { authFetch, getClientSessionToken } from "@/lib/auth/client";
 import { getHomeActions, heroMessages, sidebarItems } from "./utils";
 import { ArrowRight, Inbox, Mail, Search, ShieldCheck } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export default function HomePage() {
+  const [hasUser, setHasUser] = useState(false);
 
-export default async function HomePage() {
-  const user = await getCurrentUser(getEnv());
-  const actions = getHomeActions(Boolean(user));
+  useEffect(() => {
+    let cancelled = false;
+    if (!getClientSessionToken()) return;
+
+    authFetch("/api/auth/me", { redirectOnUnauthorized: false })
+      .then((response) => {
+        if (!cancelled) setHasUser(response.ok);
+      })
+      .catch(() => {
+        if (!cancelled) setHasUser(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const actions = getHomeActions(hasUser);
 
   return (
     <div className="min-h-dvh bg-[#f6f8fc] text-neutral-900">
@@ -60,7 +78,7 @@ export default async function HomePage() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button size="lg" asChild className="rounded-full px-6">
                 <Link href={actions.at(-1)?.href ?? "/register"}>
-                  {user ? "Open dashboard" : "Create account"}
+                  {hasUser ? "Open dashboard" : "Create account"}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -70,8 +88,8 @@ export default async function HomePage() {
                 asChild
                 className="rounded-full border-neutral-200 bg-white px-6"
               >
-                <Link href={user ? "/inbox" : "/login"}>
-                  {user ? "View inbox" : "Log in"}
+                <Link href={hasUser ? "/inbox" : "/login"}>
+                  {hasUser ? "View inbox" : "Log in"}
                 </Link>
               </Button>
             </div>

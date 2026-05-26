@@ -5,6 +5,8 @@ import { newId } from "@/lib/ids";
 import { buildSnippet, parseRawMime } from "@/lib/email/parse";
 import { resolveInboundAddress } from "@/lib/email/routing";
 import { dispatchWebhooks } from "@/lib/email/webhooks";
+import { getMessageContactNames, upsertContactFromAddress } from "@/lib/contacts/service";
+import { formatEmailAddress, getEmailAddress } from "@/lib/email/address";
 
 export type InboundQueueMessage = {
 	from: string;
@@ -47,6 +49,17 @@ export async function processInboundMessage(
 	const parsed = await parseRawMime(buffer);
 	const messageId = newId("msg");
 	const snippet = buildSnippet(parsed.text, parsed.html);
+	const mailboxAddress = `${decision.mailbox.localPart}@${decision.mailbox.hostname}`;
+	const mailboxHeader = formatEmailAddress(mailboxAddress, decision.mailbox.displayName ?? decision.mailbox.localPart);
+	const toAddr = parsed.toAddr && getEmailAddress(parsed.toAddr).toLowerCase() !== mailboxAddress.toLowerCase()
+		? parsed.toAddr
+		: mailboxHeader;
+	const fromAddr = parsed.fromAddr ?? payload.from;
+	await upsertContactFromAddress(env, {
+		userId: decision.mailbox.userId,
+		address: fromAddr,
+		source: "inbound",
+	});
 
 	await db.insert(messages).values({
 		id: messageId,
@@ -54,8 +67,8 @@ export async function processInboundMessage(
 		mailboxId: decision.mailbox.mailboxId,
 		direction: "inbound",
 		providerMessageId: parsed.messageId,
-		fromAddr: payload.from,
-		toAddr: payload.to,
+		fromAddr,
+		toAddr,
 		subject: parsed.subject,
 		snippet,
 		status: "received",
@@ -72,8 +85,8 @@ export async function processInboundMessage(
 
 	await dispatchWebhooks(env, decision.mailbox.userId, "message.inbound", {
 		messageId,
-		from: payload.from,
-		to: payload.to,
+		from: fromAddr,
+		to: toAddr,
 		subject: parsed.subject,
 	});
 }
@@ -106,5 +119,6 @@ export async function getMessageWithBody(env: CloudflareEnv, userId: string, mes
 		.from(messageBodies)
 		.where(eq(messageBodies.messageId, messageId))
 		.limit(1);
-	return { message, body };
+	const contactNames = await getMessageContactNames(env, userId, message.fromAddr, message.toAddr);
+	return { message: { ...message, ...contactNames }, body };
 }

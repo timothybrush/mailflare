@@ -8,10 +8,10 @@ import { updateMailboxSchema } from "@/lib/validators";
 import type { MailboxRouteParams } from "./types";
 import { getMailboxUpdateValues, selectMailboxForUser } from "./utils";
 
-export async function GET(_request: Request, { params }: MailboxRouteParams) {
+export async function GET(request: Request, { params }: MailboxRouteParams) {
 	const { id } = await params;
 	const env = getEnv();
-	const user = await requireUser(env);
+	const user = await requireUser(env, request);
 	const db = getDb(env);
 	const [mailbox] = await selectMailboxForUser(db, user.id, id);
 
@@ -30,7 +30,7 @@ export async function GET(_request: Request, { params }: MailboxRouteParams) {
 export async function PATCH(request: Request, { params }: MailboxRouteParams) {
 	const { id } = await params;
 	const env = getEnv();
-	const user = await requireUser(env);
+	const user = await requireUser(env, request);
 	const parsed = updateMailboxSchema.safeParse(await request.json());
 
 	if (!parsed.success) {

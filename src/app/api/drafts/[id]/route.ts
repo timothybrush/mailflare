@@ -8,10 +8,10 @@ import { buildSnippet } from "@/lib/email/parse";
 import type { DraftPayload, DraftRouteParams } from "./types";
 import { selectDraftWithBody } from "./utils";
 
-export async function GET(_request: Request, { params }: DraftRouteParams) {
+export async function GET(request: Request, { params }: DraftRouteParams) {
 	const { id } = await params;
 	const env = getEnv();
-	const user = await requireUser(env);
+	const user = await requireUser(env, request);
 	const db = getDb(env);
 	const draft = await selectDraftWithBody(db, user.id, id);
 
@@ -25,7 +25,7 @@ export async function GET(_request: Request, { params }: DraftRouteParams) {
 export async function PATCH(request: Request, { params }: DraftRouteParams) {
 	const { id } = await params;
 	const env = getEnv();
-	const user = await requireUser(env);
+	const user = await requireUser(env, request);
 	const input = (await request.json()) as DraftPayload;
 	const db = getDb(env);
 	const [draft] = await db.select().from(messages).where(eq(messages.id, id)).limit(1);
@@ -58,10 +58,10 @@ export async function PATCH(request: Request, { params }: DraftRouteParams) {
 	return NextResponse.json({ draft: { id } });
 }
 
-export async function DELETE(_request: Request, { params }: DraftRouteParams) {
+export async function DELETE(request: Request, { params }: DraftRouteParams) {
 	const { id } = await params;
 	const env = getEnv();
-	const user = await requireUser(env);
+	const user = await requireUser(env, request);
 	const db = getDb(env);
 	const [draft] = await db.select().from(messages).where(eq(messages.id, id)).limit(1);
 

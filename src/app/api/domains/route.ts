@@ -7,7 +7,7 @@ import { summariseDns, type DnsStatusSummary } from "@/lib/dns-status";
 
 export async function GET(request: NextRequest) {
 	const env = getEnv();
-	const user = await requireUser(env);
+	const user = await requireUser(env, request);
 	const domains = await listUserDomains(env, user.id);
 
 	const includeDns = request.nextUrl.searchParams.get("includeDns") === "true";
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: Request) {
 	const env = getEnv();
-	const user = await requireUser(env);
+	const user = await requireUser(env, request);
 	const parsed = addDomainSchema.safeParse(await request.json());
 	if (!parsed.success) {
 		return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });

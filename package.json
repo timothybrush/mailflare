@@ -29,10 +29,10 @@
       "CF_EMAIL_WORKER_NAME": {
         "description": "Worker name used when creating Cloudflare Email Routing rules. Keep this aligned with the `name` in `wrangler.jsonc`; the template default is `mailflare`."
       },
-      "CLOUDFLARE_EMAIL": {
-        "description": "Legacy Global API Key auth only. Use this with `CLOUDFLARE_API_KEY` instead of `CF_TOKEN`."
+      "CF_EMAIL": {
+        "description": "Legacy Global API Key auth only. Use this with `CF_API_KEY` instead of `CF_TOKEN`."
       },
-      "CLOUDFLARE_API_KEY": {
+      "CF_API_KEY": {
         "description": "Legacy Global API Key auth only. Prefer `CF_TOKEN` for new deployments."
       }
     }

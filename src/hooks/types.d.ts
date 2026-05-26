@@ -12,6 +12,8 @@ export type Message = {
 	providerMessageId: string | null;
 	fromAddr: string;
 	toAddr: string;
+	fromContactName?: string | null;
+	toContactName?: string | null;
 	subject: string | null;
 	snippet: string | null;
 	status: MessageStatus | string;
@@ -26,6 +28,15 @@ export type MessageFilterOptions = {
 	query?: string;
 	read?: MessageReadFilter;
 	title?: string;
+	limit?: number;
+	offset?: number;
+};
+
+export type MessageListResponse = {
+	messages?: Message[];
+	total?: number;
+	limit?: number;
+	offset?: number;
 };
 
 export type FolderCount = {

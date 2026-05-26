@@ -1,3 +1,4 @@
+import { persistAuthSession } from "@/lib/auth/client";
 import type { LoginResult } from "./types";
 
 export async function submitLogin(form: FormData): Promise<{ ok: boolean; data: LoginResult }> {
@@ -12,6 +13,6 @@ export async function submitLogin(form: FormData): Promise<{ ok: boolean; data: 
 
 	return {
 		ok: res.ok,
-		data: (await res.json()) as LoginResult,
+		data: (await persistAuthSession(res)) as LoginResult,
 	};
 }

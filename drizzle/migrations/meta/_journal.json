@@ -22,6 +22,13 @@
       "when": 1779256253877,
       "tag": "0002_add_message_read",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1779256253878,
+      "tag": "0003_add_contacts",
+      "breakpoints": true
     }
   ]
 }

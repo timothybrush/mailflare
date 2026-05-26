@@ -1,3 +1,4 @@
+import { persistAuthSession } from "@/lib/auth/client";
 import type { DomainSetupResult, RegisterResult, SetupStatus } from "./types";
 
 export async function getSetupStatus(): Promise<SetupStatus> {
@@ -43,6 +44,6 @@ export async function submitRegistration(
 
 	return {
 		ok: res.ok,
-		data: (await res.json()) as RegisterResult,
+		data: (await persistAuthSession(res)) as RegisterResult,
 	};
 }

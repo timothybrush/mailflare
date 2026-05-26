@@ -57,6 +57,14 @@ export const updateMailboxSchema = z.object({
 	displayName: z.string().max(100).nullable().optional(),
 });
 
+export const updateProfileSchema = z.object({
+	name: z.string().trim().min(1).max(100),
+	resetEmail: z.preprocess(
+		(value) => (typeof value === "string" ? value.trim() : value),
+		z.string().email().or(z.literal("")).transform((value) => value || null),
+	),
+});
+
 export const routingRuleSchema = z.object({
 	domainId: z.string().min(1),
 	pattern: z.string().min(1),

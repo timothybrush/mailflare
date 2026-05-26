@@ -18,7 +18,7 @@ type DraftPayload = {
 
 export async function GET(request: Request) {
 	const env = getEnv();
-	const user = await requireUser(env);
+	const user = await requireUser(env, request);
 	const url = new URL(request.url);
 	const mailboxId = url.searchParams.get("mailboxId");
 	const db = getDb(env);
@@ -41,7 +41,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
 	const env = getEnv();
-	const user = await requireUser(env);
+	const user = await requireUser(env, request);
 	const input = (await request.json()) as DraftPayload;
 	const db = getDb(env);
 	const draftId = newId("msg");

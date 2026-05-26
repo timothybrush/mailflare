@@ -24,6 +24,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import { authFetch } from "@/lib/auth/client";
 import type { DnsRecord, DnsStatusSummary, Domain } from "./types";
 
 export default function DomainsPage() {
@@ -38,7 +39,7 @@ export default function DomainsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["domains"],
     queryFn: async () => {
-      const res = await fetch("/api/domains?includeDns=true");
+      const res = await authFetch("/api/domains?includeDns=true");
       return (await res.json()) as {
         domains: Domain[];
         dns: Record<string, DnsStatusSummary>;
@@ -48,7 +49,7 @@ export default function DomainsPage() {
 
   const create = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/domains", {
+      const res = await authFetch("/api/domains", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -70,14 +71,14 @@ export default function DomainsPage() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/domains/${id}`, { method: "DELETE" });
+      const res = await authFetch(`/api/domains/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to remove");
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["domains"] }),
   });
 
   const loadDns = async (id: string) => {
-    const res = await fetch(`/api/domains/${id}/dns`);
+    const res = await authFetch(`/api/domains/${id}/dns`);
     const json = (await res.json()) as { domain: Domain; dns: unknown };
     if (res.ok) setDnsView(json);
   };

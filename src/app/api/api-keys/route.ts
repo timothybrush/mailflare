@@ -13,9 +13,9 @@ const createKeySchema = z.object({
 	scopes: z.array(z.enum(["send", "read"])).min(1),
 });
 
-export async function GET() {
+export async function GET(request: Request) {
 	const env = getEnv();
-	const user = await requireUser(env);
+	const user = await requireUser(env, request);
 	const db = getDb(env);
 	const rows = await db
 		.select({
@@ -33,7 +33,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
 	const env = getEnv();
-	const user = await requireUser(env);
+	const user = await requireUser(env, request);
 	const parsed = createKeySchema.safeParse(await request.json());
 	if (!parsed.success) {
 		return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });

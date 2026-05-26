@@ -6,7 +6,7 @@ import { sendEmail } from "@/lib/email/send";
 
 export async function POST(request: Request) {
 	const env = getEnv();
-	const user = await requireUser(env);
+	const user = await requireUser(env, request);
 	const parsed = sendEmailSchema.safeParse(await request.json());
 	if (!parsed.success) {
 		return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });

@@ -56,6 +56,29 @@ export const mailboxes = sqliteTable(
 	(t) => [uniqueIndex("mailboxes_address_idx").on(t.domainId, t.localPart)],
 );
 
+export const contacts = sqliteTable(
+	"contacts",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		email: text("email").notNull(),
+		displayName: text("display_name"),
+		source: text("source", { enum: ["manual", "inbound", "outbound"] })
+			.notNull()
+			.default("inbound"),
+		lastSeenAt: integer("last_seen_at", { mode: "timestamp" }),
+		createdAt: integer("created_at", { mode: "timestamp" })
+			.notNull()
+			.$defaultFn(() => new Date()),
+	},
+	(t) => [
+		uniqueIndex("contacts_user_email_idx").on(t.userId, t.email),
+		index("contacts_user_idx").on(t.userId),
+	],
+);
+
 export const apiKeys = sqliteTable("api_keys", {
 	id: text("id").primaryKey(),
 	userId: text("user_id")
@@ -188,6 +211,7 @@ export const schema = {
 	users,
 	domains,
 	mailboxes,
+	contacts,
 	apiKeys,
 	messages,
 	messageBodies,

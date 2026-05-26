@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { MessageCounts } from "./types";
+import { clearMessageCountsCache, fetchMessageCounts } from "./utils";
 
 const emptyCounts: MessageCounts = {
 	folders: {
@@ -12,34 +13,40 @@ const emptyCounts: MessageCounts = {
 	mailboxes: [],
 };
 
-export function useMessageCounts(mailboxId?: string | null) {
+export function useMessageCounts(mailboxId?: string | null, enabled = true) {
 	const [counts, setCounts] = useState<MessageCounts>(emptyCounts);
-	const [isLoading, setIsLoading] = useState(true);
+	const [isLoading, setIsLoading] = useState(enabled);
 
 	useEffect(() => {
+		if (!enabled) {
+			setIsLoading(false);
+			return;
+		}
+
 		let cancelled = false;
 
-		async function loadCounts() {
+		async function loadCounts(force = false) {
 			setIsLoading(true);
 			try {
-				const params = new URLSearchParams();
-				if (mailboxId) params.set("mailboxId", mailboxId);
-				const res = await fetch(`/api/messages/counts?${params.toString()}`);
-				const data = (await res.json()) as { counts?: MessageCounts };
-				if (!cancelled) setCounts(data.counts ?? emptyCounts);
+				const nextCounts = await fetchMessageCounts(mailboxId, force);
+				if (!cancelled) setCounts(nextCounts ?? emptyCounts);
 			} finally {
 				if (!cancelled) setIsLoading(false);
 			}
 		}
 
 		void loadCounts();
-		window.addEventListener("mailflare:messages-changed", loadCounts);
+		function onMessagesChanged() {
+			clearMessageCountsCache();
+			void loadCounts(true);
+		}
+		window.addEventListener("mailflare:messages-changed", onMessagesChanged);
 
 		return () => {
 			cancelled = true;
-			window.removeEventListener("mailflare:messages-changed", loadCounts);
+			window.removeEventListener("mailflare:messages-changed", onMessagesChanged);
 		};
-	}, [mailboxId]);
+	}, [enabled, mailboxId]);
 
 	return { counts, isLoading };
 }

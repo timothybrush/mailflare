@@ -8,6 +8,7 @@ import {
 	useState,
 } from "react";
 import type { ReactNode } from "react";
+import { fetchMailboxOptions } from "./mailbox-provider-utils";
 
 export type MailboxOption = {
 	id: string;
@@ -40,18 +41,11 @@ export function MailboxProvider({ children }: { children: ReactNode }) {
 	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
-		fetch("/api/mailboxes")
-			.then((res) => res.json())
-			.then((data) => {
-				const items: MailboxOption[] = ((data as { mailboxes: MailboxOption[] }).mailboxes ?? []).map(
-					(m: MailboxOption) => ({
-						id: m.id,
-						localPart: m.localPart,
-						hostname: m.hostname,
-						displayName: m.displayName,
-						isPrimary: m.isPrimary,
-					}),
-				);
+		let cancelled = false;
+
+		fetchMailboxOptions()
+			.then((items) => {
+				if (cancelled) return;
 				setMailboxes(items);
 
 				const storedId = localStorage.getItem(STORAGE_KEY);
@@ -70,12 +64,19 @@ export function MailboxProvider({ children }: { children: ReactNode }) {
 				}
 			})
 			.catch(() => {})
-			.finally(() => setIsLoading(false));
+			.finally(() => {
+				if (!cancelled) setIsLoading(false);
+			});
+
+		return () => {
+			cancelled = true;
+		};
 	}, []);
 
 	const setSelectedMailbox = useCallback((mb: MailboxOption | null) => {
 		setSelectedMailboxState(mb);
 		if (mb) {
+			setMailboxes((items) => items.map((item) => (item.id === mb.id ? mb : item)));
 			localStorage.setItem(STORAGE_KEY, mb.id);
 		} else {
 			localStorage.removeItem(STORAGE_KEY);

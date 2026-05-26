@@ -1,9 +1,11 @@
+import type { BulkMessageAction } from "@/app/api/messages/bulk/types";
 import type { MessageDirection } from "@/hooks/types";
-
-export type MessageActionStatus = "trash" | "spam";
 
 export type MessageActionsProps = {
 	messageId: string;
 	direction: MessageDirection;
 	status: string;
+	read: boolean;
 };
+
+export type SingleMessageAction = BulkMessageAction | "reply";

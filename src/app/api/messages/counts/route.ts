@@ -8,7 +8,7 @@ import { buildMessageCounts } from "./utils";
 
 export async function GET(request: Request) {
 	const env = getEnv();
-	const user = await getCurrentUser(env);
+	const user = await getCurrentUser(env, request);
 	if (!user) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}

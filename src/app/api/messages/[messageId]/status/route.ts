@@ -11,7 +11,7 @@ export async function POST(
 ) {
 	const { messageId } = await params;
 	const env = getEnv();
-	const user = await getCurrentUser(env);
+	const user = await getCurrentUser(env, request);
 	if (!user) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}

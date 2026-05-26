@@ -7,9 +7,9 @@ import { requireUser } from "@/lib/auth/cookies";
 import { newId } from "@/lib/ids";
 import { routingRuleSchema } from "@/lib/validators";
 
-export async function GET() {
+export async function GET(request: Request) {
 	const env = getEnv();
-	const user = await requireUser(env);
+	const user = await requireUser(env, request);
 	const db = getDb(env);
 	const rows = await db.select().from(routingRules).where(eq(routingRules.userId, user.id));
 	return NextResponse.json({ rules: rows });
@@ -17,7 +17,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
 	const env = getEnv();
-	const user = await requireUser(env);
+	const user = await requireUser(env, request);
 	const parsed = routingRuleSchema.safeParse(await request.json());
 	if (!parsed.success) {
 		return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });

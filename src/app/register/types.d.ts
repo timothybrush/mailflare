@@ -9,6 +9,7 @@ export type DomainSetupResult = {
 };
 
 export type RegisterResult = {
+	token?: string;
 	redirect?: string;
 	error?: string;
 };

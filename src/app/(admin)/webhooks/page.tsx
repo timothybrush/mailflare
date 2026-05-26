@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authFetch } from "@/lib/auth/client";
 
 export default function WebhooksPage() {
 	const qc = useQueryClient();
@@ -15,14 +16,14 @@ export default function WebhooksPage() {
 	const { data } = useQuery({
 		queryKey: ["webhooks"],
 		queryFn: async () => {
-			const res = await fetch("/api/webhooks");
+			const res = await authFetch("/api/webhooks");
 			return (await res.json()) as { webhooks: { id: string; url: string }[] };
 		},
 	});
 
 	const create = useMutation({
 		mutationFn: async () => {
-			const res = await fetch("/api/webhooks", {
+			const res = await authFetch("/api/webhooks", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({

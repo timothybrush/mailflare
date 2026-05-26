@@ -37,7 +37,7 @@ Domains are **not** dashboard-only. This app calls Cloudflare when you add/remov
 | Remove subdomain sending | `DELETE /zones/{zone_id}/email/sending/subdomains/{tag}` |
 | Subdomain sending DNS records | `GET .../subdomains/{tag}/dns` |
 
-**Requirements:** Prefer `CF_TOKEN` with Zone Read + Email Routing Edit + Email Sending Edit + Email Routing Rules Write (or broader). If you use a legacy Global API Key instead, set `CLOUDFLARE_API_KEY` and `CLOUDFLARE_EMAIL`. The hostname must be the account's Cloudflare zone apex or a subdomain under that zone. Root-domain sending uses the Cloudflare Email Service binding, while subdomain sending can also provision the sending-subdomain DNS records. Mailbox creation creates a Cloudflare Email Routing rule that sends that address to `CF_EMAIL_WORKER_NAME` (`mailflare` by default).
+**Requirements:** Prefer `CF_TOKEN` with Zone Read + Email Routing Edit + Email Sending Edit + Email Routing Rules Write (or broader). If you use a legacy Global API Key instead, set `CF_API_KEY` and `CF_EMAIL`. The hostname must be the account's Cloudflare zone apex or a subdomain under that zone. Root-domain sending uses the Cloudflare Email Service binding, while subdomain sending can also provision the sending-subdomain DNS records. Mailbox creation creates a Cloudflare Email Routing rule that sends that address to `CF_EMAIL_WORKER_NAME` (`mailflare` by default).
 
 App routes:
 
@@ -50,7 +50,7 @@ App routes:
 ```bash
 cp .dev.vars.example .dev.vars
 # Add CF_TOKEN and optionally CF_ACCOUNT_ID.
-# For a legacy Global API Key, use CLOUDFLARE_API_KEY + CLOUDFLARE_EMAIL instead.
+# For a legacy Global API Key, use CF_API_KEY + CF_EMAIL instead.
 
 npm install
 npm run db:migrate:local
@@ -96,7 +96,7 @@ curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
   -H "Authorization: Bearer <CF_TOKEN>"
 ```
 
-The response should include `"success": true` and `"status": "active"`. In `.dev.vars` or deploy settings, set `CF_TOKEN` to the token secret value only. Do not include the word `Bearer`, do not use the token ID, and do not put a Global API Key in `CF_TOKEN`. For a Global API Key, set both `CLOUDFLARE_EMAIL` and `CLOUDFLARE_API_KEY` instead.
+The response should include `"success": true` and `"status": "active"`. In `.dev.vars` or deploy settings, set `CF_TOKEN` to the token secret value only. Do not include the word `Bearer`, do not use the token ID, and do not put a Global API Key in `CF_TOKEN`. For a Global API Key, set both `CF_EMAIL` and `CF_API_KEY` instead.
 
 Also check whether the token has an expiration, a `not_before` time, or client IP restrictions. If you changed deploy variables in Cloudflare, redeploy so the Worker receives the new values.
 

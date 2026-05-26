@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authFetch } from "@/lib/auth/client";
 import type { ApiKey } from "./types";
 import { parseApiKeyScopes } from "./utils";
 
@@ -28,14 +29,14 @@ export default function ApiKeysPage() {
 	const { data, isLoading } = useQuery({
 		queryKey: ["api-keys"],
 		queryFn: async () => {
-			const res = await fetch("/api/api-keys");
+			const res = await authFetch("/api/api-keys");
 			return (await res.json()) as { apiKeys: ApiKey[] };
 		},
 	});
 
 	const create = useMutation({
 		mutationFn: async () => {
-			const res = await fetch("/api/api-keys", {
+			const res = await authFetch("/api/api-keys", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ name, scopes: ["send", "read"] }),

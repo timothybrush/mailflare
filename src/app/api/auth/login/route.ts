@@ -26,6 +26,7 @@ export async function POST(request: Request) {
 	const token = await createSession(env, user.id);
 	const response = NextResponse.json({
 		ok: true,
+		token,
 		redirect: hasMailboxes ? "/inbox" : "/onboarding",
 	});
 	response.cookies.set(SESSION_COOKIE, token, {

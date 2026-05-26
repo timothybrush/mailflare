@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authFetch } from "@/lib/auth/client";
 import type { Domain, Mailbox } from "./types";
 import { getMailboxAddress, getMailboxName } from "./utils";
 
@@ -27,7 +28,7 @@ export default function MailboxesPage() {
 	const domains = useQuery({
 		queryKey: ["domains"],
 		queryFn: async () => {
-			const res = await fetch("/api/domains");
+			const res = await authFetch("/api/domains");
 			return (await res.json()) as { domains: Domain[] };
 		},
 	});
@@ -35,14 +36,14 @@ export default function MailboxesPage() {
 	const mailboxes = useQuery({
 		queryKey: ["mailboxes"],
 		queryFn: async () => {
-			const res = await fetch("/api/mailboxes");
+			const res = await authFetch("/api/mailboxes");
 			return (await res.json()) as { mailboxes: Mailbox[] };
 		},
 	});
 
 	const create = useMutation({
 		mutationFn: async () => {
-			const res = await fetch("/api/mailboxes", {
+			const res = await authFetch("/api/mailboxes", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ domainId, localPart, displayName: localPart }),

@@ -6,6 +6,7 @@ import { Check, LogOut, Mail, Settings } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useSelectedMailbox } from "@/components/mailbox-provider";
 import { useMessageCounts } from "@/hooks/use-message-counts";
+import { authFetch, clearClientSessionToken } from "@/lib/auth/client";
 import { cn } from "@/lib/utils";
 
 export function MailboxSelector() {
@@ -15,7 +16,7 @@ export function MailboxSelector() {
 	const router = useRouter();
 	const [open, setOpen] = useState(false);
 	const ref = useRef<HTMLDivElement>(null);
-	const { counts } = useMessageCounts();
+	const { counts } = useMessageCounts(null, open);
 
 	useEffect(() => {
 		function onPointerDown(event: PointerEvent) {
@@ -38,11 +39,11 @@ export function MailboxSelector() {
 		pathname.startsWith("/domains") ||
 		pathname.startsWith("/routing") ||
 		pathname.startsWith("/api-keys") ||
-		pathname.startsWith("/webhooks") ||
-		pathname.startsWith("/settings");
+		pathname.startsWith("/webhooks");
 
 	async function logout() {
-		await fetch("/api/auth/logout", { method: "POST" });
+		await authFetch("/api/auth/logout", { method: "POST", redirectOnUnauthorized: false });
+		clearClientSessionToken();
 		setOpen(false);
 		router.push("/login");
 	}

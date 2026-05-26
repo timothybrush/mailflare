@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useSelectedMailbox } from "@/components/mailbox-provider";
+import { authFetch } from "@/lib/auth/client";
+import { formatEmailAddress } from "@/lib/email/address";
 import { cn } from "@/lib/utils";
 import { fetchDraft } from "./utils";
 
@@ -33,7 +35,13 @@ export function ComposeForm({
 	const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const fromAddr = useMemo(
-		() => (selectedMailbox ? `${selectedMailbox.localPart}@${selectedMailbox.hostname}` : ""),
+		() =>
+			selectedMailbox
+				? formatEmailAddress(
+						`${selectedMailbox.localPart}@${selectedMailbox.hostname}`,
+						selectedMailbox.displayName ?? selectedMailbox.localPart,
+					)
+				: "",
 		[selectedMailbox],
 	);
 
@@ -92,7 +100,7 @@ export function ComposeForm({
 				subject,
 				text,
 			};
-			const res = await fetch(draftId ? `/api/drafts/${draftId}` : "/api/drafts", {
+			const res = await authFetch(draftId ? `/api/drafts/${draftId}` : "/api/drafts", {
 				method: draftId ? "PATCH" : "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(payload),
@@ -109,7 +117,7 @@ export function ComposeForm({
 	async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 		setLoading(true);
-		const res = await fetch("/api/send", {
+		const res = await authFetch("/api/send", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -129,7 +137,7 @@ export function ComposeForm({
 		}
 
 		if (draftId) {
-			void fetch(`/api/drafts/${draftId}`, { method: "DELETE" }).finally(() => {
+			void authFetch(`/api/drafts/${draftId}`, { method: "DELETE" }).finally(() => {
 				window.dispatchEvent(new Event("mailflare:messages-changed"));
 			});
 		}
@@ -187,8 +195,8 @@ export function ComposeForm({
 						id={`${mode}-to`}
 						value={to}
 						onChange={(event) => setTo(event.target.value)}
-						type="email"
-						placeholder="Recipients"
+						type="text"
+						placeholder='Recipients, or "Maya Chen" <maya@example.com>'
 						required
 						disabled={loadingDraft}
 						className="h-8 border-0 px-0 py-1 shadow-none focus-visible:ring-0"

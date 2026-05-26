@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
-import { eq, desc, and, like, or } from "drizzle-orm";
+import { eq, desc, and, like, or, count } from "drizzle-orm";
 import { getEnv } from "@/lib/cloudflare";
 import { getCurrentUser } from "@/lib/auth/cookies";
 import { getDb } from "@/db";
 import { messages } from "@/db/schema";
+import { getContactDisplayNameMap } from "@/lib/contacts/service";
+import { normalizeEmailAddress } from "@/lib/email/address";
 
 export async function GET(request: Request) {
 	const env = getEnv();
-	const user = await getCurrentUser(env);
+	const user = await getCurrentUser(env, request);
 	if (!user) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
@@ -20,6 +22,7 @@ export async function GET(request: Request) {
 	const title = url.searchParams.get("title")?.trim();
 	const read = url.searchParams.get("read");
 	const limit = Math.min(Number(url.searchParams.get("limit") ?? 50), 100);
+	const offset = Math.max(Number(url.searchParams.get("offset") ?? 0), 0);
 
 	const db = getDb(env);
 	const conditions = [eq(messages.userId, user.id)];
@@ -51,13 +54,29 @@ export async function GET(request: Request) {
 	if (title) {
 		conditions.push(like(messages.subject, `%${title}%`));
 	}
+	const where = and(...conditions);
 
+	const [totalRow] = await db
+		.select({ total: count() })
+		.from(messages)
+		.where(where);
 	const rows = await db
 		.select()
 		.from(messages)
-		.where(and(...conditions))
+		.where(where)
 		.orderBy(desc(messages.createdAt))
-		.limit(limit);
+		.limit(limit)
+		.offset(offset);
+	const contactMap = await getContactDisplayNameMap(
+		env,
+		user.id,
+		rows.flatMap((message) => [message.fromAddr, message.toAddr]),
+	);
+	const enrichedRows = rows.map((message) => ({
+		...message,
+		fromContactName: contactMap.get(normalizeEmailAddress(message.fromAddr)) ?? null,
+		toContactName: contactMap.get(normalizeEmailAddress(message.toAddr)) ?? null,
+	}));
 
-	return NextResponse.json({ messages: rows });
+	return NextResponse.json({ messages: enrichedRows, total: totalRow?.total ?? 0, limit, offset });
 }

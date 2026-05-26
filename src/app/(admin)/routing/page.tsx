@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authFetch } from "@/lib/auth/client";
 
 export default function RoutingPage() {
 	const qc = useQueryClient();
@@ -15,7 +16,7 @@ export default function RoutingPage() {
 	const domains = useQuery({
 		queryKey: ["domains"],
 		queryFn: async () => {
-			const res = await fetch("/api/domains");
+			const res = await authFetch("/api/domains");
 			return (await res.json()) as { domains: { id: string; hostname: string }[] };
 		},
 	});
@@ -23,14 +24,14 @@ export default function RoutingPage() {
 	const rules = useQuery({
 		queryKey: ["routing-rules"],
 		queryFn: async () => {
-			const res = await fetch("/api/routing-rules");
+			const res = await authFetch("/api/routing-rules");
 			return (await res.json()) as { rules: { id: string; pattern: string; action: string }[] };
 		},
 	});
 
 	const create = useMutation({
 		mutationFn: async () => {
-			const res = await fetch("/api/routing-rules", {
+			const res = await authFetch("/api/routing-rules", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ domainId, pattern, action: "store", priority: 10 }),

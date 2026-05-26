@@ -1,10 +1,13 @@
 import PostalMime from "postal-mime";
+import { formatPostalAddress, formatPostalAddressList } from "@/lib/email/address";
 
 export type ParsedEmail = {
 	subject: string | null;
 	text: string | null;
 	html: string | null;
 	messageId: string | null;
+	fromAddr: string | null;
+	toAddr: string | null;
 };
 
 export async function parseRawMime(raw: ArrayBuffer): Promise<ParsedEmail> {
@@ -14,6 +17,8 @@ export async function parseRawMime(raw: ArrayBuffer): Promise<ParsedEmail> {
 		text: email.text ?? null,
 		html: email.html ?? null,
 		messageId: email.messageId ?? null,
+		fromAddr: formatPostalAddress(email.from, null),
+		toAddr: formatPostalAddressList(email.to, null),
 	};
 }
 

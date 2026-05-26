@@ -28,14 +28,11 @@ const links = [
 ];
 
 export function DashboardNav({ className }: { className?: string }) {
-  const { selectedMailbox } = useSelectedMailbox();
-  const { counts } = useMessageCounts(selectedMailbox?.id);
+  const { selectedMailbox, isLoading } = useSelectedMailbox();
+  const { counts } = useMessageCounts(selectedMailbox?.id, !isLoading);
   const linksWithCounts = links.map((link) => {
     if (link.href === "/inbox") return { ...link, count: getFolderNavCount("inbox", counts.folders) };
-    if (link.href === "/sent") return { ...link, count: getFolderNavCount("sent", counts.folders) };
-    if (link.href === "/drafts") return { ...link, count: getFolderNavCount("drafts", counts.folders) };
     if (link.href === "/spam") return { ...link, count: getFolderNavCount("spam", counts.folders) };
-    if (link.href === "/trash") return { ...link, count: getFolderNavCount("trash", counts.folders) };
     return link;
   });
 
