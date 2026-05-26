@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "Email Platform",
+	title: "Mailflare",
 	description: "Multi-tenant email on Cloudflare",
 };
 

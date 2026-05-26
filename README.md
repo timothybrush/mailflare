@@ -61,7 +61,7 @@ Keep `wrangler.jsonc` committed. Cloudflare's deploy button uses it to detect th
 
 Required setup values:
 
-- `CF_TOKEN` — scoped Cloudflare API token with Zone Read, Email Routing Edit, Email Sending Edit, and Email Routing Rules Write.
+- `CF_TOKEN` — runtime scoped Cloudflare API token with Zone Read, Email Routing Edit, Email Sending Edit, and Email Routing Rules Write. This is separate from Cloudflare's deploy/build token; Cloudflare does not automatically expose the deploy token to this app.
 - `CF_ACCOUNT_ID` — optional unless your token can access multiple accounts.
 - `CF_EMAIL_WORKER_NAME` — must match the Worker name in `wrangler.jsonc`; default is `mailflare`.
 
@@ -72,6 +72,8 @@ After deployment, route inbound mail to the Worker in Cloudflare Email Routing.
 ### Cloudflare token troubleshooting
 
 If onboarding fails with `Cloudflare API 403 ... code 9109: Invalid access token`, Cloudflare rejected the credential before checking domain permissions.
+
+The Deploy to Cloudflare flow can authenticate and deploy the Worker, but it does not create a runtime `CF_TOKEN` for Mailflare's onboarding API calls. Create `CF_TOKEN` manually from Cloudflare dashboard user API tokens and enter it as a deploy secret/variable.
 
 Verify the token:
 

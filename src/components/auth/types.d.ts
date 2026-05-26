@@ -9,7 +9,7 @@ export type AuthShellStep = {
 export type AuthShellProps = {
 	icon: LucideIcon;
 	title: string;
-	description: ReactNode;
+	description?: ReactNode;
 	children: ReactNode;
 	footer: ReactNode;
 	steps?: AuthShellStep[];
