@@ -6,6 +6,7 @@ import {
 	type InboundQueueMessage,
 } from "./src/lib/email/inbound";
 import { processOutboundQueue, type OutboundQueueMessage } from "./src/lib/email/send";
+import { isInboundQueueMessage } from "./worker-utils";
 
 export default {
 	fetch: nextHandler.fetch,
@@ -27,11 +28,10 @@ export default {
 	},
 
 	async queue(batch: MessageBatch, env: CloudflareEnv): Promise<void> {
-		const isInbound = batch.queue === "mailflare-inbound";
 		for (const msg of batch.messages) {
 			try {
-				if (isInbound) {
-					await processInboundMessage(env, msg.body as InboundQueueMessage);
+				if (isInboundQueueMessage(msg.body)) {
+					await processInboundMessage(env, msg.body);
 				} else {
 					await processOutboundQueue(env, msg.body as OutboundQueueMessage);
 				}

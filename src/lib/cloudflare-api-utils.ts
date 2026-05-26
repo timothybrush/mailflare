@@ -46,10 +46,16 @@ export function formatCloudflareError(path: string, status: number, statusText: 
 }
 
 export function getCloudflareAuthHint(errors: CfApiError[]) {
-	const hasAuthError = errors.some((error) => error.code === 10000 || /auth/i.test(error.message));
+	const hasAuthError = errors.some(
+		(error) =>
+			error.code === 10000 ||
+			error.code === 9109 ||
+			/auth/i.test(error.message) ||
+			/token/i.test(error.message),
+	);
 	if (!hasAuthError) return "";
 
-	return " Use CF_TOKEN for a scoped API token, or CLOUDFLARE_API_KEY plus CLOUDFLARE_EMAIL for a Global API Key.";
+	return " Verify CF_TOKEN with `curl https://api.cloudflare.com/client/v4/user/tokens/verify -H \"Authorization: Bearer <token>\"`. Use the token secret value without `Bearer`, or use CLOUDFLARE_API_KEY plus CLOUDFLARE_EMAIL for a Global API Key.";
 }
 
 export function getEmailWorkerName(env: CloudflareEnv): string {

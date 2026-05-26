@@ -65,7 +65,24 @@ Required setup values:
 - `CF_ACCOUNT_ID` — optional unless your token can access multiple accounts.
 - `CF_EMAIL_WORKER_NAME` — must match the Worker name in `wrangler.jsonc`; default is `mailflare`.
 
+If you rename the Worker, also update related literal resource names in `wrangler.jsonc`: `name`, `services[].service` for `WORKER_SELF_REFERENCE`, `CF_EMAIL_WORKER_NAME`, and any D1/R2/Queue names you want renamed. Cloudflare service bindings require the target Worker name to exist exactly; they cannot currently reference `name` dynamically.
+
 After deployment, route inbound mail to the Worker in Cloudflare Email Routing.
+
+### Cloudflare token troubleshooting
+
+If onboarding fails with `Cloudflare API 403 ... code 9109: Invalid access token`, Cloudflare rejected the credential before checking domain permissions.
+
+Verify the token:
+
+```bash
+curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer <CF_TOKEN>"
+```
+
+The response should include `"success": true` and `"status": "active"`. In `.dev.vars` or deploy settings, set `CF_TOKEN` to the token secret value only. Do not include the word `Bearer`, do not use the token ID, and do not put a Global API Key in `CF_TOKEN`. For a Global API Key, set both `CLOUDFLARE_EMAIL` and `CLOUDFLARE_API_KEY` instead.
+
+Also check whether the token has an expiration, a `not_before` time, or client IP restrictions. If you changed deploy variables in Cloudflare, redeploy so the Worker receives the new values.
 
 ### Manual deploy
 
