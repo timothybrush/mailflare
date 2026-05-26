@@ -23,7 +23,7 @@ Domains are **not** dashboard-only. This app calls Cloudflare when you add/remov
 | Remove subdomain sending | `DELETE /zones/{zone_id}/email/sending/subdomains/{tag}` |
 | Subdomain sending DNS records | `GET .../subdomains/{tag}/dns` |
 
-**Requirements:** Prefer `CF_TOKEN` with Zone Read + Email Routing Edit + Email Sending Edit + Email Routing Rules Write (or broader). If you use a legacy Global API Key instead, set `CLOUDFLARE_API_KEY` and `CLOUDFLARE_EMAIL`. The hostname must be the account's Cloudflare zone apex or a subdomain under that zone. Root-domain sending uses the Cloudflare Email Service binding, while subdomain sending can also provision the sending-subdomain DNS records. Mailbox creation creates a Cloudflare Email Routing rule that sends that address to `CF_EMAIL_WORKER_NAME` (`lumal` by default).
+**Requirements:** Prefer `CF_TOKEN` with Zone Read + Email Routing Edit + Email Sending Edit + Email Routing Rules Write (or broader). If you use a legacy Global API Key instead, set `CLOUDFLARE_API_KEY` and `CLOUDFLARE_EMAIL`. The hostname must be the account's Cloudflare zone apex or a subdomain under that zone. Root-domain sending uses the Cloudflare Email Service binding, while subdomain sending can also provision the sending-subdomain DNS records. Mailbox creation creates a Cloudflare Email Routing rule that sends that address to `CF_EMAIL_WORKER_NAME` (`mailflare` by default).
 
 App routes:
 
@@ -57,11 +57,13 @@ Publish this repository to GitHub, then replace `hieunc229/mailflare` in the but
 
 The deploy flow reads `wrangler.jsonc`, provisions the Worker bindings, prompts for values from `.dev.vars.example`, runs D1 migrations, builds the OpenNext Worker, and deploys it.
 
+Keep `wrangler.jsonc` committed. Cloudflare's deploy button uses it to detect the Worker entrypoint and required bindings. Do not commit `.dev.vars`; deploy-time secrets should be entered through Cloudflare's setup flow or set locally in `.dev.vars`.
+
 Required setup values:
 
 - `CF_TOKEN` — scoped Cloudflare API token with Zone Read, Email Routing Edit, Email Sending Edit, and Email Routing Rules Write.
 - `CF_ACCOUNT_ID` — optional unless your token can access multiple accounts.
-- `CF_EMAIL_WORKER_NAME` — must match the Worker name in `wrangler.jsonc`; default is `lumal`.
+- `CF_EMAIL_WORKER_NAME` — must match the Worker name in `wrangler.jsonc`; default is `mailflare`.
 
 After deployment, route inbound mail to the Worker in Cloudflare Email Routing.
 

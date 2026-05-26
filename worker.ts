@@ -27,7 +27,7 @@ export default {
 	},
 
 	async queue(batch: MessageBatch, env: CloudflareEnv): Promise<void> {
-		const isInbound = batch.queue === "lumal-inbound";
+		const isInbound = batch.queue === "mailflare-inbound";
 		for (const msg of batch.messages) {
 			try {
 				if (isInbound) {

@@ -50,6 +50,4 @@ next-env.d.ts
 
 
 !.dev.vars.example
-
-wrangler.jsonc
 yarn.lock

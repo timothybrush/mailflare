@@ -27,7 +27,7 @@
         "description": "Optional Cloudflare account ID. Leave blank unless your API token can access multiple accounts."
       },
       "CF_EMAIL_WORKER_NAME": {
-        "description": "Worker name used when creating Cloudflare Email Routing rules. Keep this aligned with the `name` in `wrangler.jsonc`; the template default is `lumal`."
+        "description": "Worker name used when creating Cloudflare Email Routing rules. Keep this aligned with the `name` in `wrangler.jsonc`; the template default is `mailflare`."
       },
       "CLOUDFLARE_EMAIL": {
         "description": "Legacy Global API Key auth only. Use this with `CLOUDFLARE_API_KEY` instead of `CF_TOKEN`."
@@ -37,6 +37,7 @@
       }
     }
   },
+  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@opennextjs/cloudflare": "^1.19.9",
     "@radix-ui/react-dialog": "^1.1.15",

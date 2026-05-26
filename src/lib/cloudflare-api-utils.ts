@@ -53,5 +53,5 @@ export function getCloudflareAuthHint(errors: CfApiError[]) {
 }
 
 export function getEmailWorkerName(env: CloudflareEnv): string {
-	return env.CF_EMAIL_WORKER_NAME?.trim() || "lumal";
+	return env.CF_EMAIL_WORKER_NAME?.trim() || "mailflare";
 }
