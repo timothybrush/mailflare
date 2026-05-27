@@ -1,16 +1,13 @@
-# Email Platform
+# Mailflare
+
+A self-hosted, AI-powered email inbox with custom domains, powered by Cloudflare
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/hieunc229/mailflare)
 
-TypeScript email service on **Cloudflare Workers** (OpenNext + Next.js), **Drizzle/D1**, and **Cloudflare Email Service**.
+![](/screenshot.png)
 
-## Model
 
-- **No organizations** — one user account owns domains, mailboxes, and API keys.
-- **First visit:** register → **onboarding** (add domain + first mailbox) → inbox.
-- **Domains:** added via **Cloudflare API** (zone must exist on your account).
-
-### Features
+### Roadmap
 
 - [x] Domain onboarding through Cloudflare, including inbound Email Routing DNS and sending DNS setup.
 - [x] Domain removal cleanup for linked Cloudflare routing rules and sending subdomain resources.
@@ -19,12 +16,22 @@ TypeScript email service on **Cloudflare Workers** (OpenNext + Next.js), **Drizz
 - [x] Inbox, sent, drafts, spam, and trash folders backed by a shared mail list component.
 - [x] Popup composer with autosaved drafts and draft resume from the drafts folder.
 - [x] Outbound send API, API keys, message read status, spam/trash moves, and seeded demo data.
-- [] Advanced routing rules for catch-all addresses, forwarding, reject/block rules, and priorities.
-- [] Webhook management UI and delivery retry visibility.
-- [] Search, filtering, and richer mailbox/folder counts.
-- [] Attachment support and richer compose formatting.
+- [x] Search, filtering, and richer mailbox/folder counts.
+- [ ] Advanced routing rules for catch-all addresses, forwarding, reject/block rules, and priorities.
+- [ ] Webhook management UI and delivery retry visibility.
+- [ ] Attachment support and richer compose formatting.
 
-## Domain API (yes, programmatic)
+#### Email agent
+
+- [ ] Message intelligence with summaries, intent classification, urgency scoring, and extracted entities.
+- [ ] Agent task queue for proposed replies, follow-ups, triage actions, and missing-information requests.
+- [ ] Human-approved actions for draft replies, folder moves, forwarding, contact creation, and webhook calls.
+- [ ] Agent rules for learned post-receipt policies such as prioritization, auto-triage, and reply templates.
+- [ ] Agent inbox view organized by action state, including needs reply, waiting on me, waiting on them, FYI, auto-handled, and needs approval.
+- [ ] Thread and contact memory for prior summaries, user preferences, relationship notes, commitments, and open loops.
+- [ ] Tool execution for trusted actions such as sending email, creating drafts, updating message status, calling webhooks, and creating contacts.
+
+## Domain API
 
 Domains are **not** dashboard-only. This app calls Cloudflare when you add/remove a domain:
 
@@ -66,6 +73,9 @@ curl -X POST http://localhost:3000/api/seed
 ## Deploy
 
 ### One-click Cloudflare deploy
+
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/hieunc229/mailflare)
 
 Publish this repository to GitHub, then replace `hieunc229/mailflare` in the button at the top of this README with the public repository path.
 
