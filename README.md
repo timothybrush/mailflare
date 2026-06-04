@@ -93,11 +93,11 @@ If you rename the Worker, also update related literal resource names in `wrangle
 
 After deployment, route inbound mail to the Worker in Cloudflare Email Routing.
 
-### Cloudflare token troubleshooting
+## Troubleshooting
 
-If onboarding fails with `Cloudflare API 403 ... code 9109: Invalid access token`, Cloudflare rejected the credential before checking domain permissions.
+### Cloudflare API 403 ... code 9109: Invalid access token
 
-The Deploy to Cloudflare flow can authenticate and deploy the Worker, but it does not create a runtime `CF_TOKEN` for Mailflare's onboarding API calls. Create `CF_TOKEN` manually from Cloudflare dashboard user API tokens and enter it as a deploy secret/variable.
+**Resolution:** The Deploy to Cloudflare flow can authenticate and deploy the Worker, but it does not create a runtime `CF_TOKEN` for Mailflare's onboarding API calls. Create `CF_TOKEN` manually from Cloudflare dashboard user API tokens and enter it as a deploy secret/variable.
 
 Verify the token:
 
@@ -109,6 +109,13 @@ curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
 The response should include `"success": true` and `"status": "active"`. In `.dev.vars` or deploy settings, set `CF_TOKEN` to the token secret value only. Do not include the word `Bearer`, do not use the token ID, and do not put a Global API Key in `CF_TOKEN`. For a Global API Key, set both `CF_EMAIL` and `CF_API_KEY` instead.
 
 Also check whether the token has an expiration, a `not_before` time, or client IP restrictions. If you changed deploy variables in Cloudflare, redeploy so the Worker receives the new values.
+
+#### Cloudflare API 403 on /zones/{zone_id}/email/routing/dns: code 10000
+
+This error indicate API Key is missing some permissions. Update `CF_TOKEN` minimum permissiongs
+
+For Account: Email Sending:Edit, DNS Settings:Edit, Email Routing Addresses:Edit
+For Zone: DNS Settings:Edit, Email Routing Rules:Edit, Zone Settings:Edit, DNS:Edit
 
 ### Manual deploy
 
